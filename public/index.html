@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AICafe — Chat with AI Companions</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f7f7f9;
+    --bg3: #eeeeee;
+    --card: #ffffff;
+
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.15);
+
+    --text: #1a1a1a;      
+    --muted: #666666;     
+
+    --accent: #c9a96e;
+    --accent2: #a8843b;
+
+    --coin: #d4a017;
+    --danger: #d64545;
+    --success: #2fa36b;
+
+    --radius: 16px;
+
+    --font: 'Noto Sans Thai', 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgb(208, 208, 208);
+    backdrop-filter: blur(20px);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    font-size: 18px; font-weight: 700; letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+  .logo span { color: var(--text); font-weight: 300; }
+  .coin-display {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    border-radius: 40px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .coin-display:hover { border-color: var(--coin); }
+  .coin-icon { font-size: 16px; }
+  .coin-amount { font-size: 14px; font-weight: 600; color: var(--coin); }
+  .topup-btn {
+    font-size: 11px; color: var(--muted);
+    background: none; border: none; cursor: pointer;
+    text-decoration: underline; font-family: var(--font);
+    transition: color 0.2s;
+  }
+  .topup-btn:hover { color: var(--accent); }
+
+  /* HERO */
+  .hero {
+    padding: 120px 24px 40px;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); background: rgba(201,169,110,0.1);
+    border: 0.5px solid rgba(201,169,110,0.3);
+    border-radius: 40px; padding: 5px 14px; margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 46px);
+    font-weight: 700; line-height: 1.15;
+    letter-spacing: -1px; margin-bottom: 12px;
+  }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero p { font-size: 15px; color: var(--muted); line-height: 1.7; }
+
+  /* BOTS GRID */
+  .section { padding: 20px 24px 60px; max-width: 1100px; margin: 0 auto; }
+  .section-title {
+    font-size: 13px; font-weight: 500; color: var(--muted);
+    letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .bots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .bot-card {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .bot-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.3s;
+    border-radius: var(--radius);
+  }
+  .bot-card.luna::before { background: radial-gradient(circle at 30% 30%, rgba(160,120,255,0.08) 0%, transparent 70%); }
+  .bot-card.kai::before  { background: radial-gradient(circle at 30% 30%, rgba(78,203,141,0.08) 0%, transparent 70%); }
+  .bot-card.nova::before { background: radial-gradient(circle at 30% 30%, rgba(78,162,255,0.08) 0%, transparent 70%); }
+  .bot-card.rex::before  { background: radial-gradient(circle at 30% 30%, rgba(255,100,100,0.08) 0%, transparent 70%); }
+  .bot-card.mochi::before{ background: radial-gradient(circle at 30% 30%, rgba(255,180,100,0.08) 0%, transparent 70%); }
+  .bot-card.zen::before  { background: radial-gradient(circle at 30% 30%, rgba(100,200,200,0.08) 0%, transparent 70%); }
+  .bot-card:hover { border-color: var(--border2); transform: translateY(-3px); }
+  .bot-card:hover::before { opacity: 1; }
+
+  .bot-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .bot-avatar {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+    border: 0.5px solid var(--border2);
+  }
+  .luna .bot-avatar  { background: rgba(160,120,255,0.15); }
+  .kai .bot-avatar   { background: rgba(78,203,141,0.15); }
+  .nova .bot-avatar  { background: rgba(78,162,255,0.15); }
+  .rex .bot-avatar   { background: rgba(255,100,100,0.15); }
+  .mochi .bot-avatar { background: rgba(255,180,100,0.15); }
+  .zen .bot-avatar   { background: rgba(100,200,200,0.15); }
+
+  .bot-info { flex: 1; min-width: 0; }
+  .bot-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .bot-role { font-size: 12px; color: var(--muted); }
+  .bot-badge {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 3px 8px; border-radius: 40px;
+    margin-top: 4px; display: inline-block;
+  }
+  .badge-free { background: rgba(78,203,141,0.15); color: #4ecb8d; }
+  .badge-hot  { background: rgba(255,100,100,0.15); color: #ff6464; }
+  .badge-new  { background: rgba(78,162,255,0.15); color: #4ea2ff; }
+
+  .bot-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+  .bot-traits { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 16px; }
+  .trait {
+    font-size: 11px; padding: 3px 9px;
+    background: var(--bg3); border: 0.5px solid var(--border);
+    border-radius: 20px; color: var(--muted);
+  }
+  .bot-footer { display: flex; align-items: center; justify-content: space-between; }
+  .bot-cost { font-size: 12px; color: var(--muted); }
+  .bot-cost strong { color: var(--coin); font-weight: 600; }
+  .chat-btn {
+    font-size: 12px; font-weight: 600; font-family: var(--font);
+    padding: 7px 16px; border-radius: 8px; cursor: pointer;
+    border: 0.5px solid var(--border2);
+    background: var(--bg3); color: var(--text);
+    transition: all 0.2s;
+  }
+  .chat-btn:hover { background: var(--accent); color: #0a0a0f; border-color: var(--accent); }
+
+  /* MODAL BASE */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  /* TOPUP MODAL */
+  .topup-modal {
+    background: var(--card);
+    border: 0.5px solid var(--border2);
+    border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 480px;
+    padding: 28px 24px 40px;
+    transform: translateY(40px); transition: transform 0.3s;
+  }
+  .modal-overlay.open .topup-modal { transform: translateY(0); }
+  .modal-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 22px; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .pack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .pack {
+    background: var(--bg3); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 14px 10px; text-align: center;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .pack:hover { border-color: var(--coin); }
+  .pack.selected { border-color: var(--coin); background: rgba(245,200,66,0.08); }
+  .pack-coins { font-size: 20px; font-weight: 700; color: var(--coin); }
+  .pack-bonus { font-size: 10px; color: var(--success); margin: 2px 0; }
+  .pack-price { font-size: 12px; color: var(--muted); }
+  .pay-btn {
+    width: 100%; padding: 14px; border-radius: 12px;
+    background: var(--accent); color: #0a0a0f;
+    font-size: 15px; font-weight: 700; font-family: var(--font);
+    border: none; cursor: pointer; transition: all 0.2s;
+  }
+  .pay-btn:hover { background: var(--accent2); }
+  .pay-note { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; }
+
+  /* CHAT MODAL */
+  .chat-modal {
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 560px;
+    height: 85vh; max-height: 700px;
+    display: flex; flex-direction: column;
+    transform: translateY(40px); transition: transform 0.3s;
+    overflow: hidden;
+  }
+  .modal-overlay.open .chat-modal { transform: translateY(0); }
+
+  .chat-header {
+    padding: 16px 20px;
+    border-bottom: 0.5px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0; background: var(--card);
+  }
+  .chat-bot-avatar {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .chat-bot-info { flex: 1; }
+  .chat-bot-name { font-size: 14px; font-weight: 600; }
+  .chat-status { font-size: 11px; color: var(--success); }
+  .close-chat {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--bg3); border: 0.5px solid var(--border);
+    color: var(--muted); font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .close-chat:hover { background: rgba(224,85,85,0.15); color: var(--danger); border-color: var(--danger); }
+
+  /* TIMER BAR */
+  .timer-bar {
+    padding: 10px 20px;
+    background: var(--bg3);
+    border-bottom: 0.5px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0;
+  }
+  .timer-label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .timer-track {
+    flex: 1; height: 4px; background: var(--border);
+    border-radius: 2px; overflow: hidden;
+  }
+  .timer-fill { height: 100%; border-radius: 2px; transition: width 1s linear, background 0.5s; }
+  .timer-count { font-size: 13px; font-weight: 700; white-space: nowrap; min-width: 44px; text-align: right; }
+  .timer-count.warning { color: var(--danger); }
+  .coin-live {
+    font-size: 11px; color: var(--coin); white-space: nowrap;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  /* MESSAGES */
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 12px;
+    scroll-behavior: smooth;
+  }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .msg { display: flex; gap: 10px; max-width: 85%; }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+  .msg-avatar {
+    width: 30px; height: 30px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .msg.bot .msg-avatar { background: var(--bg3); border: 0.5px solid var(--border); }
+  .msg.user .msg-avatar { background: rgba(201,169,110,0.2); font-size: 12px; font-weight: 600; color: var(--accent); }
+  .msg-bubble {
+    padding: 10px 14px; border-radius: 14px;
+    font-size: 13.5px; line-height: 1.65;
+  }
+  .msg.bot .msg-bubble {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-top-left-radius: 4px;
+    color: var(--text);
+  }
+  .msg.user .msg-bubble {
+    background: var(--accent);
+    color: #0a0a0f;
+    font-weight: 500;
+    border-top-right-radius: 4px;
+  }
+  .msg-time { font-size: 10px; color: var(--muted); margin-top: 4px; text-align: right; }
+
+  /* TYPING */
+  .typing-dots { display: flex; gap: 4px; padding: 4px 2px; }
+  .typing-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted); animation: bounce 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%,60%,100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+  }
+
+  /* INPUT */
+  .chat-input-area {
+    padding: 12px 16px;
+    border-top: 0.5px solid var(--border);
+    display: flex; gap: 8px; align-items: flex-end;
+    flex-shrink: 0; background: var(--card);
+  }
+  .chat-input {
+    flex: 1; background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    border-radius: 12px; padding: 10px 14px;
+    font-size: 13.5px; color: var(--text); font-family: var(--font);
+    resize: none; max-height: 100px; outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.5;
+  }
+  .chat-input:focus { border-color: rgba(201,169,110,0.5); }
+  .chat-input::placeholder { color: var(--muted); }
+  .send-btn {
+    width: 40px; height: 40px; flex-shrink: 0;
+    border-radius: 10px; background: var(--accent);
+    border: none; cursor: pointer; color: #0a0a0f;
+    font-size: 16px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .send-btn:hover { background: var(--accent2); transform: scale(1.05); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* PAYWALL */
+  .paywall-banner {
+    margin: 8px 20px;
+    background: rgba(224,85,85,0.1); border: 0.5px solid rgba(224,85,85,0.3);
+    border-radius: 10px; padding: 12px 14px;
+    display: none; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .paywall-banner.show { display: flex; }
+  .paywall-text { font-size: 12px; color: #ff8888; }
+  .paywall-text strong { color: var(--danger); display: block; font-size: 13px; }
+  .paywall-cta {
+    font-size: 12px; font-weight: 700; font-family: var(--font);
+    padding: 6px 14px; border-radius: 8px;
+    background: var(--danger); color: #fff;
+    border: none; cursor: pointer; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .paywall-cta:hover { background: #ff6666; }
+
+  /* SUCCESS TOAST */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px);
+    background: var(--card); border: 0.5px solid var(--success);
+    border-radius: 12px; padding: 12px 20px;
+    font-size: 13px; color: var(--success);
+    z-index: 999; transition: transform 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* FREE TIME BADGE */
+  .free-time-note {
+    font-size: 11px; color: var(--success);
+    background: rgba(78,203,141,0.1); border: 0.5px solid rgba(78,203,141,0.2);
+    border-radius: 20px; padding: 3px 10px; display: inline-block; margin-top: 4px;
+  }
+
+  /* ── LOGIN MODAL ── */
+  .login-modal {
+    background: var(--card);
+    border: 0.5px solid var(--border2);
+    border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 420px;
+    padding: 28px 24px 40px;
+    transform: translateY(40px); transition: transform 0.3s;
+  }
+  .modal-overlay.open .login-modal { transform: translateY(0); }
+
+  .login-tabs {
+    display: flex; gap: 0;
+    background: var(--bg3); border-radius: 10px; padding: 3px;
+    margin-bottom: 22px;
+  }
+  .login-tab {
+    flex: 1; padding: 8px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; font-family: var(--font);
+    border: none; background: none; color: var(--muted);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .login-tab.active { background: var(--card); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+  .login-form { display: flex; flex-direction: column; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .form-input {
+    padding: 11px 14px; border-radius: 10px;
+    border: 0.5px solid var(--border2);
+    background: var(--bg3); color: var(--text);
+    font-size: 14px; font-family: var(--font);
+    outline: none; transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--muted); }
+
+  .login-btn {
+    margin-top: 4px; width: 100%; padding: 13px;
+    border-radius: 11px; background: var(--accent); color: #0a0a0f;
+    font-size: 14px; font-weight: 700; font-family: var(--font);
+    border: none; cursor: pointer; transition: all 0.2s;
+  }
+  .login-btn:hover { background: var(--accent2); }
+
+  .login-divider {
+    text-align: center; font-size: 11px; color: var(--muted);
+    margin: 4px 0; position: relative;
+  }
+  .login-divider::before, .login-divider::after {
+    content: ''; position: absolute; top: 50%;
+    width: 38%; height: 0.5px; background: var(--border2);
+  }
+  .login-divider::before { left: 0; }
+  .login-divider::after { right: 0; }
+
+  .form-error {
+    font-size: 12px; color: var(--danger);
+    background: rgba(214,69,69,0.08); border: 0.5px solid rgba(214,69,69,0.2);
+    border-radius: 8px; padding: 8px 12px; display: none;
+  }
+  .form-error.show { display: block; }
+
+  /* nav user chip */
+  .user-chip {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--bg3); border: 0.5px solid var(--border2);
+    border-radius: 40px; padding: 5px 12px 5px 7px;
+    cursor: pointer; transition: all 0.2s; font-size: 13px;
+  }
+  .user-chip:hover { border-color: var(--accent); }
+  .user-avatar-sm {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); color: #0a0a0f;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── PAYMENT METHOD ── */
+  .pay-method-section { margin-bottom: 18px; }
+  .pay-method-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 10px; }
+  .pay-methods { display: flex; gap: 8px; }
+  .pay-method {
+    flex: 1; padding: 12px 8px; border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--bg3); cursor: pointer;
+    transition: all 0.2s; text-align: center;
+  }
+  .pay-method:hover { border-color: var(--border2); }
+  .pay-method.selected { border-color: var(--accent); background: rgba(201,169,110,0.07); }
+  .pay-method-icon { font-size: 22px; margin-bottom: 5px; }
+  .pay-method-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .pay-method-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* QR + instructions */
+  .payment-detail {
+    background: var(--bg3); border: 0.5px solid var(--border);
+    border-radius: 14px; padding: 18px;
+    margin-bottom: 16px; display: none;
+    flex-direction: column; align-items: center; gap: 12px;
+  }
+  .payment-detail.show { display: flex; }
+  .qr-box {
+    width: 160px; height: 160px; border-radius: 12px;
+    background: #fff; border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 6px;
+  }
+  .qr-placeholder { font-size: 48px; }
+  .qr-note { font-size: 10px; color: var(--muted); text-align: center; }
+  .pay-instruction { font-size: 12px; color: var(--muted); line-height: 1.7; text-align: center; }
+  .pay-instruction strong { color: var(--text); }
+  .pay-ref {
+    font-size: 11px; color: var(--accent);
+    background: rgba(201,169,110,0.1); border: 0.5px solid rgba(201,169,110,0.2);
+    border-radius: 20px; padding: 4px 12px;
+  }
+
+  /* login required banner inside topup */
+  .login-required-banner {
+    background: rgba(201,169,110,0.08);
+    border: 0.5px solid rgba(201,169,110,0.25);
+    border-radius: 12px; padding: 16px;
+    text-align: center; margin-bottom: 16px;
+  }
+  .login-required-banner p { font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.6; }
+  .login-required-banner strong { color: var(--text); }
+  .go-login-btn {
+    padding: 9px 22px; border-radius: 9px;
+    background: var(--accent); color: #0a0a0f;
+    font-size: 13px; font-weight: 700; font-family: var(--font);
+    border: none; cursor: pointer; transition: all 0.2s;
+  }
+  .go-login-btn:hover { background: var(--accent2); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">AI<span>Cafe</span></div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <!-- แสดงเมื่อล็อกอินแล้ว -->
+    <div class="coin-display" id="coinDisplayNav" onclick="openTopup()" style="display:none">
+      <span class="coin-icon">🪙</span>
+      <span class="coin-amount" id="coinCount">150</span>
+      <span style="font-size:12px;color:var(--muted)">เหรียญ</span>
+    </div>
+    <button class="topup-btn" id="topupNavBtn" onclick="openTopup()" style="display:none">+ เติมเงิน</button>
+    <!-- user chip -->
+    <div class="user-chip" id="userChipNav" style="display:none" onclick="logout()">
+      <div class="user-avatar-sm" id="userAvatarNav">A</div>
+      <span id="userNameNav">user</span>
+      <span style="font-size:10px;color:var(--muted)">ออกจากระบบ</span>
+    </div>
+    <!-- ปุ่มล็อกอิน -->
+    <button class="topup-btn" id="loginNavBtn" onclick="openLogin()" style="font-size:13px;font-weight:600;color:var(--text);text-decoration:none;border:0.5px solid var(--border2);padding:6px 14px;border-radius:20px;background:var(--bg3)">เข้าสู่ระบบ</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">✦ AI Companion Chat</div>
+  <h1>คุยกับ <em>AI</em> ที่ใช่<br>ในสไตล์ที่ชอบ</h1>
+  <p>เลือกบอทที่ตรงกับอารมณ์คุณ แต่ละตัวมีนิสัยไม่เหมือนกัน<br>
+  รับเวลาฟรี 30 นาทีต่อการสนทนา หลังจากนั้นใช้เหรียญต่อนาที</p>
+</div>
+
+<!-- BOTS -->
+<div class="section">
+  <div class="section-title">เลือกคู่สนทนา</div>
+  <div class="bots-grid" id="botsGrid"></div>
+</div>
+
+<!-- TOPUP MODAL -->
+<div class="modal-overlay" id="topupOverlay">
+  <div class="topup-modal">
+    <div class="modal-handle"></div>
+
+    <!-- ถ้ายังไม่ล็อกอิน -->
+    <div id="topupLoginGuard">
+      <div class="modal-title">💰 เติมเหรียญ</div>
+      <div class="login-required-banner" style="margin-top:16px">
+        <p><strong>กรุณาเข้าสู่ระบบก่อน</strong><br>เพื่อความปลอดภัยของบัญชีและประวัติการเติมเงิน</p>
+        <button class="go-login-btn" onclick="openLoginFromTopup()">เข้าสู่ระบบ / สมัครสมาชิก</button>
+      </div>
+    </div>
+
+    <!-- ถ้าล็อกอินแล้ว -->
+    <div id="topupContent" style="display:none">
+      <div class="modal-title">💰 เติมเหรียญ</div>
+      <div class="modal-sub">เลือกแพ็กเกจที่ต้องการ ยิ่งซื้อเยอะ ยิ่งประหยัด</div>
+      <div class="pack-grid">
+        <div class="pack" onclick="selectPack(this,50,15,'15฿')">
+          <div class="pack-coins">50</div>
+          <div style="font-size:11px;color:var(--muted)">เหรียญ</div>
+          <div class="pack-price">15฿</div>
+        </div>
+        <div class="pack selected" onclick="selectPack(this,150,39,'39฿')">
+          <div class="pack-coins">150</div>
+          <div class="pack-bonus">+20 โบนัส</div>
+          <div class="pack-price">39฿</div>
+        </div>
+        <div class="pack" onclick="selectPack(this,350,79,'79฿')">
+          <div class="pack-coins">350</div>
+          <div class="pack-bonus">+50 โบนัส</div>
+          <div class="pack-price">79฿</div>
+        </div>
+        <div class="pack" onclick="selectPack(this,700,139,'139฿')">
+          <div class="pack-coins">700</div>
+          <div class="pack-bonus">+120 โบนัส</div>
+          <div class="pack-price">139฿</div>
+        </div>
+        <div class="pack" onclick="selectPack(this,1500,269,'269฿')">
+          <div class="pack-coins">1500</div>
+          <div class="pack-bonus">+300 โบนัส</div>
+          <div class="pack-price">269฿</div>
+        </div>
+        <div class="pack" onclick="selectPack(this,3000,499,'499฿')">
+          <div class="pack-coins">3000</div>
+          <div class="pack-bonus">+700 โบนัส</div>
+          <div class="pack-price">499฿</div>
+        </div>
+      </div>
+
+      <!-- เลือกวิธีชำระ -->
+      <div class="pay-method-section">
+        <div class="pay-method-label">วิธีการชำระเงิน</div>
+        <div class="pay-methods">
+          <div class="pay-method selected" id="methodPromptpay" onclick="selectMethod('promptpay')">
+            <div class="pay-method-icon">📱</div>
+            <div class="pay-method-name">พร้อมเพย์</div>
+            <div class="pay-method-sub">PromptPay</div>
+          </div>
+          <div class="pay-method" id="methodWallet" onclick="selectMethod('wallet')">
+            <div class="pay-method-icon">💚</div>
+            <div class="pay-method-name">ทรูมันนี่</div>
+            <div class="pay-method-sub">TrueMoney Wallet</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- รายละเอียดการชำระ -->
+      <div class="payment-detail show" id="detailPromptpay">
+        <div class="qr-box">
+          <div class="qr-placeholder">⬛</div>
+          <div class="qr-note">QR Code พร้อมเพย์</div>
+        </div>
+        <div class="pay-instruction">
+          สแกน QR ด้วยแอปธนาคาร หรือกดชำระผ่าน<br>
+          <strong>พร้อมเพย์ หมายเลข 0XX-XXX-XXXX</strong><br>
+          จำนวนเงิน: <strong id="promptpayAmount">39฿</strong>
+        </div>
+        <div class="pay-ref">REF: AICAFE-<span id="promptpayRef">000000</span></div>
+      </div>
+
+      <div class="payment-detail" id="detailWallet">
+        <div class="qr-box">
+          <div class="qr-placeholder">💚</div>
+          <div class="qr-note">TrueMoney QR</div>
+        </div>
+        <div class="pay-instruction">
+          เปิดแอป TrueMoney Wallet แล้วสแกน QR<br>
+          หรือโอนไปยัง <strong>TrueMoney 0XX-XXX-XXXX</strong><br>
+          จำนวนเงิน: <strong id="walletAmount">39฿</strong>
+        </div>
+        <div class="pay-ref">REF: AICAFE-<span id="walletRef">000000</span></div>
+      </div>
+
+      <button class="pay-btn" id="payBtn" onclick="confirmTopup()">เติมเงิน 150 เหรียญ — 39฿</button>
+      <div class="pay-note">โหมด demo: กดเพื่อรับเหรียญทันที</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginOverlay">
+  <div class="login-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="margin-bottom:6px">👋 ยินดีต้อนรับ</div>
+    <div class="modal-sub" style="margin-bottom:18px">เข้าสู่ระบบเพื่อใช้งาน AICafe</div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" id="tabLogin" onclick="switchTab('login')">เข้าสู่ระบบ</button>
+      <button class="login-tab" id="tabRegister" onclick="switchTab('register')">สมัครสมาชิก</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="formLogin">
+      <div class="login-form">
+        <div class="form-error" id="loginError">อีเมลหรือรหัสผ่านไม่ถูกต้อง</div>
+        <div class="form-group">
+          <label class="form-label">อีเมล</label>
+          <input class="form-input" id="loginEmail" type="email" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">รหัสผ่าน</label>
+          <input class="form-input" id="loginPassword" type="password" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+        <button class="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+        <div class="login-divider">หรือ</div>
+        <div style="font-size:12px;color:var(--muted);text-align:center">
+          ยังไม่มีบัญชี? 
+          <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="switchTab('register')">สมัครฟรี</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Register form -->
+    <div id="formRegister" style="display:none">
+      <div class="login-form">
+        <div class="form-error" id="registerError">กรุณากรอกข้อมูลให้ครบ</div>
+        <div class="form-group">
+          <label class="form-label">ชื่อที่ใช้แสดง</label>
+          <input class="form-input" id="regName" type="text" placeholder="เช่น มินท์">
+        </div>
+        <div class="form-group">
+          <label class="form-label">อีเมล</label>
+          <input class="form-input" id="regEmail" type="email" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">รหัสผ่าน</label>
+          <input class="form-input" id="regPassword" type="password" placeholder="อย่างน้อย 6 ตัวอักษร"
+            onkeydown="if(event.key==='Enter') doRegister()">
+        </div>
+        <button class="login-btn" onclick="doRegister()">สมัครสมาชิก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT MODAL -->
+<div class="modal-overlay" id="chatOverlay">
+  <div class="chat-modal" id="chatModal">
+    <div class="chat-header">
+      <div class="chat-bot-avatar" id="chatAvatar"></div>
+      <div class="chat-bot-info">
+        <div class="chat-bot-name" id="chatBotName">—</div>
+        <div class="chat-status" id="chatStatus">● กำลังออนไลน์</div>
+      </div>
+      <div class="close-chat" onclick="closeChat()">✕</div>
+    </div>
+    <div class="timer-bar">
+      <span class="timer-label">⏱ เวลาฟรีคงเหลือ</span>
+      <div class="timer-track"><div class="timer-fill" id="timerFill" style="width:100%;background:var(--success)"></div></div>
+      <span class="timer-count" id="timerCount">3:00</span>
+      <span class="coin-live" id="coinLive" style="display:none">🪙 <span id="liveCoin">0</span></span>
+    </div>
+    <div class="paywall-banner" id="paywallBanner">
+      <div class="paywall-text">
+        <strong>หมดเวลาฟรีแล้ว!</strong>
+        กำลังหักเหรียญ 1 เหรียญ/นาที
+      </div>
+      <button class="paywall-cta" onclick="openTopupFromChat()">เติมเหรียญ</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+      <textarea class="chat-input" id="chatInput" placeholder="พิมพ์ข้อความ..." rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BOTS = [
+  {
+    id: 'luna', name: 'ลูน่า', role: 'เพื่อนที่ใจดี', emoji: '🌙',
+    badge: 'free', badgeLabel: 'ยอดนิยม',
+    desc: 'อ่อนโยน ฟังดี พูดจาอบอุ่น เหมือนเพื่อนสนิทที่ไว้ใจได้ เหมาะสำหรับการระบาย',
+    traits: ['อ่อนโยน','ใจเย็น','เป็นกังวล','ชอบฟัง'],
+    costPerMin: 1, freeMinutes: 30, color: '#a078ff',
+    greet: 'สวัสดีจ้า~ วันนี้เป็นยังไงบ้าง? มีอะไรให้ลูน่าช่วยฟังไหม? 🌙',
+    style: 'อ่อนโยน อบอุ่น ใจดี ใช้ภาษาไทยสวยงาม',
+  },
+  {
+    id: 'kai', name: 'ไค', role: 'โค้ชส่วนตัว', emoji: '💪',
+    badge: 'hot', badgeLabel: 'ฮิต',
+    desc: 'ตรงไปตรงมา กระตุ้นพลัง พูดเหมือนโค้ช ไม่ประจบไม่ตำหนิ เน้นแอ็กชัน',
+    traits: ['ตรง','แอ็กทีฟ','มีพลัง','เป็นระบบ'],
+    costPerMin: 2, freeMinutes: 30, color: '#4ecb8d',
+    greet: 'โย! มาแล้วหรือ? วันนี้เราจะทำอะไรให้มันดีกว่าเมื่อวานกัน? บอกมาเลย! 💪',
+    style: 'กระตุ้น ตรงไปตรงมา มีพลัง ใช้ภาษากึ่งทางการ',
+  },
+  {
+    id: 'nova', name: 'โนวา', role: 'นักวิทยาศาสตร์', emoji: '🔬',
+    badge: 'new', badgeLabel: 'ใหม่',
+    desc: 'ฉลาด ชอบอธิบาย วิเคราะห์ลึก เหมาะสำหรับถามคำถามซับซ้อนหรือขอคำอธิบาย',
+    traits: ['วิเคราะห์','มีเหตุผล','ละเอียด','ชอบข้อมูล'],
+    costPerMin: 2, freeMinutes: 30, color: '#4ea2ff',
+    greet: 'ยินดีที่ได้คุยด้วย ฉันคือโนวา พร้อมช่วยวิเคราะห์และอธิบายทุกอย่าง 🔬 มีคำถามอะไรไหม?',
+    style: 'เป็นทางการ ชอบอธิบายอย่างละเอียด ใช้ตัวเลขและข้อเท็จจริง',
+  },
+  {
+    id: 'rex', name: 'เร็กซ์', role: 'ตัวตลกขำขัน', emoji: '🎭',
+    badge: 'hot', badgeLabel: 'ฮิต',
+    desc: 'ขำ กวน ตลก แซว แต่ไม่ตั้งใจร้าย ชอบมุกและ wordplay ทำให้อารมณ์ดี',
+    traits: ['ตลก','กวน','แซว','ขำ'],
+    costPerMin: 1, freeMinutes: 30, color: '#ff6464',
+    greet: 'อ้าว มาหาเร็กซ์แล้ว! เหนื่อยจากโลกความจริงหรือเปล่า? ที่นี่ไม่มีอะไรจริงเลย 55555 🎭',
+    style: 'ตลก กวน มีมุก แซวแต่ดูแลใจ',
+  },
+  {
+    id: 'mochi', name: 'โมจิ', role: 'น้องน่ารัก', emoji: '🍡',
+    badge: null,
+    desc: 'น่ารัก ใช้ภาษาน่ารัก ชอบ emoji มีพลังงานสูง ชอบชม ทำให้รู้สึกดี',
+    traits: ['น่ารัก','ร่าเริง','ชอบชม','ใช้ emoji'],
+    costPerMin: 1, freeMinutes: 30, color: '#ffb464',
+    greet: 'ยินดีมากเลยย~~ โมจิดีใจที่ได้เจอค้าบ! วันนี้ทำอะไรมาบ้าง? 🍡✨💖',
+    style: 'น่ารักมาก ใช้ emoji เยอะ ใช้คำท้ายประโยคน่ารัก เช่น ค้าบ นะคะ~',
+  },
+  {
+    id: 'zen', name: 'เซ็น', role: 'นักปรัชญา', emoji: '🧘',
+    badge: null,
+    desc: 'สงบ ลึกซึ้ง ชอบถามคำถามกลับ พูดน้อยแต่มีความหมาย เหมาะสำหรับคิดเรื่องชีวิต',
+    traits: ['สงบ','ลึกซึ้ง','มีสติ','ปรัชญา'],
+    costPerMin: 2, freeMinutes: 30, color: '#64c8c8',
+    greet: '… สวัสดี 🧘 ทุกอย่างเริ่มต้นจากความสงบ บอกฉันสิ ตอนนี้ใจของคุณอยู่ที่ไหน?',
+    style: 'สงบ ช้า ลึกซึ้ง ตั้งคำถามกลับ พูดน้อยแต่มีความหมาย',
+  },
+];
+
+// ── STATE ──────────────────────────────────────────────
+let coins = 150;
+let selectedPack = { coins: 150, price: '39฿' };
+let selectedPayMethod = 'promptpay';
+let currentBot = null;
+let chatTimer = null;
+let secondsLeft = 180;
+let isPaid = false;
+let paidSeconds = 0;
+let isTyping = false;
+
+// ── AUTH (in-memory demo) ──────────────────────────────
+// production: ใช้ JWT + backend จริง
+const DEMO_USERS = { 'demo@aicafe.com': { password: '123456', name: 'สมาชิก' } };
+let currentUser = null; // { email, name }
+
+function isLoggedIn() { return currentUser !== null; }
+
+function updateNavAuth() {
+  const loggedIn = isLoggedIn();
+  document.getElementById('coinDisplayNav').style.display  = loggedIn ? 'flex'  : 'none';
+  document.getElementById('topupNavBtn').style.display     = loggedIn ? 'inline-block' : 'none';
+  document.getElementById('userChipNav').style.display     = loggedIn ? 'flex'  : 'none';
+  document.getElementById('loginNavBtn').style.display     = loggedIn ? 'none'  : 'inline-block';
+  if (loggedIn) {
+    document.getElementById('userAvatarNav').textContent = currentUser.name[0].toUpperCase();
+    document.getElementById('userNameNav').textContent   = currentUser.name;
+  }
+}
+
+function updateTopupGuard() {
+  const loggedIn = isLoggedIn();
+  document.getElementById('topupLoginGuard').style.display = loggedIn ? 'none'  : 'block';
+  document.getElementById('topupContent').style.display    = loggedIn ? 'block' : 'none';
+}
+
+// ── LOGIN / REGISTER ───────────────────────────────────
+function openLogin() {
+  document.getElementById('loginOverlay').classList.add('open');
+}
+function openLoginFromTopup() {
+  document.getElementById('topupOverlay').classList.remove('open');
+  setTimeout(() => document.getElementById('loginOverlay').classList.add('open'), 200);
+}
+function switchTab(tab) {
+  document.getElementById('formLogin').style.display    = tab === 'login'    ? 'block' : 'none';
+  document.getElementById('formRegister').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active',    tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPassword').value;
+  const err   = document.getElementById('loginError');
+
+  const user = DEMO_USERS[email];
+  if (!user || user.password !== pass) {
+    err.classList.add('show');
+    return;
+  }
+  err.classList.remove('show');
+  currentUser = { email, name: user.name };
+  document.getElementById('loginOverlay').classList.remove('open');
+  updateNavAuth();
+  updateTopupGuard();
+  showToast(`✓ ยินดีต้อนรับ ${currentUser.name}!`);
+}
+
+function doRegister() {
+  const name  = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('regPassword').value;
+  const err   = document.getElementById('registerError');
+
+  if (!name || !email || pass.length < 6) {
+    err.textContent = 'กรุณากรอกข้อมูลให้ครบ และรหัสผ่านอย่างน้อย 6 ตัว';
+    err.classList.add('show');
+    return;
+  }
+  if (DEMO_USERS[email]) {
+    err.textContent = 'อีเมลนี้มีในระบบแล้ว';
+    err.classList.add('show');
+    return;
+  }
+  err.classList.remove('show');
+  DEMO_USERS[email] = { password: pass, name };
+  currentUser = { email, name };
+  document.getElementById('loginOverlay').classList.remove('open');
+  updateNavAuth();
+  updateTopupGuard();
+  showToast(`✓ สมัครสำเร็จ! ยินดีต้อนรับ ${name} 🎉`);
+}
+
+function logout() {
+  if (!confirm('ออกจากระบบ?')) return;
+  currentUser = null;
+  updateNavAuth();
+  updateTopupGuard();
+  showToast('ออกจากระบบแล้ว');
+}
+
+// ── PAYMENT METHOD ─────────────────────────────────────
+function selectMethod(method) {
+  selectedPayMethod = method;
+  document.getElementById('methodPromptpay').classList.toggle('selected', method === 'promptpay');
+  document.getElementById('methodWallet').classList.toggle('selected',    method === 'wallet');
+  document.getElementById('detailPromptpay').classList.toggle('show', method === 'promptpay');
+  document.getElementById('detailWallet').classList.toggle('show',    method === 'wallet');
+}
+
+function genRef() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function updatePaymentDetail(price) {
+  const ref = genRef();
+  document.getElementById('promptpayAmount').textContent = price;
+  document.getElementById('walletAmount').textContent    = price;
+  document.getElementById('promptpayRef').textContent    = ref;
+  document.getElementById('walletRef').textContent       = ref;
+}
+
+// ── TOPUP ──────────────────────────────────────────────
+function openTopup() {
+  updateTopupGuard();
+  document.getElementById('topupOverlay').classList.add('open');
+}
+function openTopupFromChat() {
+  closeChat();
+  setTimeout(openTopup, 300);
+}
+
+function selectPack(el, c, p, label) {
+  document.querySelectorAll('.pack').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPack = { coins: c, price: label };
+  document.getElementById('payBtn').textContent = `เติมเงิน ${c} เหรียญ — ${label}`;
+  updatePaymentDetail(label);
+}
+
+function confirmTopup() {
+  coins += selectedPack.coins;
+  updateCoinUI();
+  document.getElementById('topupOverlay').classList.remove('open');
+  showToast(`✓ เติมสำเร็จ! ได้รับ ${selectedPack.coins} เหรียญ`);
+}
+
+function updateCoinUI() {
+  document.getElementById('coinCount').textContent = coins;
+}
+
+// ── CLOSE OVERLAYS ─────────────────────────────────────
+document.getElementById('topupOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+document.getElementById('chatOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeChat();
+});
+document.getElementById('loginOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+
+// ── BOTS ───────────────────────────────────────────────
+function renderBots() {
+  const grid = document.getElementById('botsGrid');
+  grid.innerHTML = BOTS.map(b => `
+    <div class="bot-card ${b.id}" onclick="openChat('${b.id}')">
+      <div class="bot-header">
+        <div class="bot-avatar">${b.emoji}</div>
+        <div class="bot-info">
+          <div class="bot-name">${b.name}</div>
+          <div class="bot-role">${b.role}</div>
+          ${b.badge ? `<div class="bot-badge badge-${b.badge}">${b.badgeLabel}</div>` : ''}
+        </div>
+      </div>
+      <div class="bot-desc">${b.desc}</div>
+      <div class="bot-traits">${b.traits.map(t=>`<span class="trait">${t}</span>`).join('')}</div>
+      <div class="bot-footer">
+        <div class="bot-cost">
+          <strong>${b.costPerMin}</strong> เหรียญ/นาที
+          <div class="free-time-note">ฟรี ${b.freeMinutes} นาทีแรก</div>
+        </div>
+        <button class="chat-btn">คุยเลย →</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── CHAT ───────────────────────────────────────────────
+function openChat(botId) {
+  currentBot = BOTS.find(b => b.id === botId);
+  if (!currentBot) return;
+  document.getElementById('chatAvatar').textContent = currentBot.emoji;
+  document.getElementById('chatAvatar').style.background = currentBot.color + '25';
+  document.getElementById('chatBotName').textContent = currentBot.name + ' — ' + currentBot.role;
+  document.getElementById('chatMessages').innerHTML = '';
+  secondsLeft = currentBot.freeMinutes * 60;
+  isPaid = false; paidSeconds = 0;
+  document.querySelector('.timer-label').textContent = '⏱ เวลาฟรีคงเหลือ';
+  document.getElementById('paywallBanner').classList.remove('show');
+  document.getElementById('coinLive').style.display = 'none';
+  document.getElementById('chatInput').disabled = false;
+  document.getElementById('sendBtn').disabled = false;
+  updateTimer();
+  addBotMsg(currentBot.greet);
+  document.getElementById('chatOverlay').classList.add('open');
+  startTimer();
+  setTimeout(() => { document.getElementById('chatInput').focus(); }, 400);
+}
+
+function closeChat() {
+  document.getElementById('chatOverlay').classList.remove('open');
+  clearInterval(chatTimer);
+  currentBot = null;
+}
+
+function startTimer() {
+  clearInterval(chatTimer);
+  chatTimer = setInterval(() => {
+    if (isPaid) {
+      paidSeconds++;
+      if (paidSeconds % 60 === 0) {
+        if (coins >= currentBot.costPerMin) {
+          coins -= currentBot.costPerMin;
+          updateCoinUI();
+        } else {
+          clearInterval(chatTimer);
+          addBotMsg('⚠️ เหรียญหมดแล้ว! กรุณาเติมเหรียญเพื่อคุยต่อนะคะ');
+          document.getElementById('chatInput').disabled = true;
+          document.getElementById('sendBtn').disabled = true;
+        }
+      }
+      document.getElementById('liveCoin').textContent = Math.floor(paidSeconds / 60) * currentBot.costPerMin;
+    } else {
+      secondsLeft--;
+      if (secondsLeft <= 0) {
+        secondsLeft = 0; isPaid = true;
+        document.querySelector('.timer-label').textContent = '💰 เวลาที่ใช้ (มีค่าใช้จ่าย)';
+        document.getElementById('paywallBanner').classList.add('show');
+        document.getElementById('coinLive').style.display = 'flex';
+        addBotMsg('หมดเวลาฟรีแล้วนะ~ ขณะนี้กำลังหัก ' + currentBot.costPerMin + ' เหรียญ/นาที 💰');
+      }
+      updateTimer();
+    }
+  }, 1000);
+}
+
+function updateTimer() {
+  const total = (currentBot?.freeMinutes || 3) * 60;
+  const pct   = (secondsLeft / total) * 100;
+  const m = Math.floor(secondsLeft / 60);
+  const s = secondsLeft % 60;
+  const fill  = document.getElementById('timerFill');
+  const count = document.getElementById('timerCount');
+  fill.style.width      = pct + '%';
+  fill.style.background = pct > 50 ? 'var(--success)' : pct > 20 ? 'var(--accent)' : 'var(--danger)';
+  count.textContent     = m + ':' + String(s).padStart(2, '0');
+  count.className       = 'timer-count' + (pct < 20 ? ' warning' : '');
+}
+
+function addBotMsg(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = 'msg bot';
+  const now  = new Date();
+  const time = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
+  div.innerHTML = `
+    <div class="msg-avatar">${currentBot.emoji}</div>
+    <div>
+      <div class="msg-bubble">${text}</div>
+      <div class="msg-time">${time}</div>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addUserMsg(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = 'msg user';
+  const now  = new Date();
+  const time = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
+  div.innerHTML = `
+    <div class="msg-avatar">คุณ</div>
+    <div>
+      <div class="msg-bubble">${text}</div>
+      <div class="msg-time">${time}</div>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = 'msg bot'; div.id = 'typingMsg';
+  div.innerHTML = `<div class="msg-avatar">${currentBot.emoji}</div>
+    <div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typingMsg');
+  if (t) t.remove();
+}
+
+async function sendMsg() {
+  const input = document.getElementById('chatInput');
+  const text  = input.value.trim();
+  if (!text || isTyping || !currentBot) return;
+  if (isPaid && coins < currentBot.costPerMin) {
+    showToast('⚠️ เหรียญไม่พอ กรุณาเติมเหรียญก่อน');
+    return;
+  }
+  addUserMsg(text);
+  input.value = ''; input.style.height = 'auto';
+  isTyping = true;
+  showTyping();
+  try {
+    const systemPrompt = `คุณคือ ${currentBot.name} ซึ่งเป็น ${currentBot.role} ที่มีนิสัย${currentBot.style}. ตอบเป็นภาษาไทยเสมอ ตอบสั้นๆ กระชับ ไม่เกิน 3 ประโยค ให้ตรงตามบุคลิกของ ${currentBot.name} อย่างเคร่งครัด`;
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: text }]
+      })
+    });
+    const data = await res.json();
+    removeTyping();
+    addBotMsg(data.content?.[0]?.text || 'ขอโทษนะ ไม่ได้ยิน ลองพิมพ์ใหม่อีกทีได้เลย');
+  } catch (e) {
+    removeTyping();
+    addBotMsg('ขอโทษนะ เกิดข้อผิดพลาดนิดหน่อย ลองใหม่ได้เลย!');
+  }
+  isTyping = false;
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── INIT ───────────────────────────────────────────────
+updateNavAuth();
+updateTopupGuard();
+updatePaymentDetail('39฿');
+renderBots();
+</script>
+</body>
+</html>
